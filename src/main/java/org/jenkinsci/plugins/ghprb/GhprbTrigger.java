@@ -34,7 +34,8 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 	public final String adminlist;
 	public String whitelist;
 	public final String cron;
-	
+	public final String reponame;
+
 	private static Pattern githubUserRepoPattern = Pattern.compile("^http[s]?://([^/]*)/([^/]*)/([^/]*).*");
 	private transient GhprbRepo repository;
 	transient Map<Integer,GhprbPullRequest> pulls;
@@ -43,11 +44,12 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 	transient HashSet<String> whitelisted;
 
 	@DataBoundConstructor
-    public GhprbTrigger(String adminlist, String whitelist, String cron) throws ANTLRException{
+	public GhprbTrigger(String reponame, String adminlist, String whitelist, String cron) throws ANTLRException{
 		super(cron);
 		this.adminlist = adminlist;
 		this.whitelist = whitelist;
 		this.cron = cron;
+		this.reponame = reponame;
 	}
 
 	@Override
@@ -91,7 +93,7 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 	public QueueTaskFuture<?> startJob(GhprbCause cause){
 		StringParameterValue paramSha1;
 		if(cause.isMerged()){
-			paramSha1 = new StringParameterValue("sha1","origin/pr/" + cause.getPullID() + "/merge");
+			paramSha1 = new StringParameterValue("sha1", this.reponame + "/pr/" + cause.getPullID() + "/merge");
 		}else{
 			paramSha1 = new StringParameterValue("sha1",cause.getCommit());
 		}
